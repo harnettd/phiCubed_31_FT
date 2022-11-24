@@ -54,6 +54,6 @@ loop_package(
 	# if you choose ``geometric[_ku]`` and 'normaliz' is not in your
 	# $PATH, you can set the path to the 'normaliz' command-line
 	# executable here
-	normaliz_executable='/usr/bin/normaliz'
+	normaliz_executable='/home/derek/normaliz-3.9.3/normaliz'
 
 )
