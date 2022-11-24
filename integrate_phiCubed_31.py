@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Compute the one-loop three-point function at zero and finite temperature.
+"""Compute the three-point, one-loop function at zero and finite temperature.
 
-A pySecDec integrate file for evaluating the one-loop three-point function at 
+A pySecDec integrate file for evaluating the one-loop three-point function at
 zero and finite temperature.
 
 @author: Derek Harnett
@@ -19,19 +19,19 @@ from scipy.integrate import trapezoid
 value, uncertainty, eps = symbols('value uncertainty eps')
 indeterminate = symbols('indeterminate')
 
-rel_error = 1e-6
-abs_error = 1e-9
-max_iter = 1000000
+REL_ERROR = 1e-6
+ABS_ERROR = 1e-9
+MAX_ITER = 1000000
 
 # load pySecDec libraries for the zero temperature spacetime integrals
 spacetime_int_psd = IntegralLibrary('phiCubed_31/phiCubed_31_pylink.so')
-spacetime_int_psd.use_Vegas(flags=0, epsrel=rel_error, epsabs=abs_error,
-                              maxeval=max_iter)
+spacetime_int_psd.use_Vegas(flags=0, epsrel=REL_ERROR, epsabs=ABS_ERROR,
+                              maxeval=MAX_ITER)
 
 # load pySecDec libraries for the finite temperature spatial integrals
 space_int_psd = IntegralLibrary('phiCubed_31_space/phiCubed_31_space_pylink.so')
-space_int_psd.use_Vegas(flags=0, epsrel=rel_error, epsabs=abs_error,
-                      maxeval=max_iter)
+space_int_psd.use_Vegas(flags=0, epsrel=REL_ERROR, epsabs=ABS_ERROR,
+                      maxeval=MAX_ITER)
 
 def psd_to_sympy(expr):
     """Convert a pySecDec string output to a sympy expression.
@@ -111,7 +111,7 @@ def dot_product(v1, v2):
 def spatial_integral(p1_space, p2_space, M1M1, M2M2, M3M3):
     """
     Compute the spatial integral.
-    
+
     Parameters
     ----------
     p1_space : complex 3-tuple
@@ -141,7 +141,7 @@ def spatial_integral(p1_space, p2_space, M1M1, M2M2, M3M3):
     return expand(missing_factor*get_value(psd_to_sympy(space_int_str)))
 
 
-def corr_zero_temp(p1, p2, m1, m2, m3, method="psd", k0_eucl_max=10, 
+def corr_zero_temp(p1, p2, m1, m2, m3, method="psd", k0_eucl_max=10,
                    num_grid_pts=21):
     """
     Compute the zero temperature correlator.
@@ -177,8 +177,8 @@ def corr_zero_temp(p1, p2, m1, m2, m3, method="psd", k0_eucl_max=10,
                                    num_grid_pts)
     else:
         return  # error
-    
-    
+
+
 def corr_zero_temp_psd(p1, p2, m1, m2, m3):
     """
     Compute the zero temperature correlator using pySecDec.
@@ -246,7 +246,7 @@ def corr_zero_temp_iter(p1, p2, m1, m2, m3, k0_eucl_max, num_grid_pts):
         M1M1 = m1**2 + (k0_eucl + p2_0_eucl)**2
         M2M2 = m2**2 + (k0_eucl - p1_0_eucl)**2
         M3M3 = m3**2 + k0_eucl**2
-        spatial_int_vals.append(spatial_integral(p1_space, p2_space, M1M1, 
+        spatial_int_vals.append(spatial_integral(p1_space, p2_space, M1M1,
                                                  M2M2, M3M3))
     return expand(-I/(2*np.pi)*trapezoid(spatial_int_vals, k0_eucl_grid))
 
@@ -271,7 +271,7 @@ def omega(n, beta):
 
 def corr_finite_temp_n(p1, p2, m1, m2, m3, beta, n):
     """Compute the nth finite temperature spatial integral.
-    
+
     Parameters
     ----------
     p1 : complex 4-tuple
@@ -308,7 +308,7 @@ def corr_finite_temp_n(p1, p2, m1, m2, m3, beta, n):
 
 def corr_finite_temp(p1, p2, m1, m2, m3, beta, nmin, nmax):
     """Compute the finite temperature correlator.
-    
+
     Parameters
     ----------
     p1 : complex 4-tuple
@@ -333,7 +333,7 @@ def corr_finite_temp(p1, p2, m1, m2, m3, beta, nmin, nmax):
     real
         The finite temperature correlator.
     """
-    data = [corr_finite_temp_n(p1, p2, m1, m2, m3, beta, n) 
+    data = [corr_finite_temp_n(p1, p2, m1, m2, m3, beta, n)
             for n in range(nmin, nmax)]
     return sum(data)
 
