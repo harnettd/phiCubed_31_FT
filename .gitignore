@@ -1,8 +1,7 @@
-debug_spatial_integrate.py
-*.pdf
-*.xopp
-*.nb
-phiCubed_31/
 __pycache__/
+phiCubed_31/
+
+debug_spatial_integrate.py
+scratch/
 siyuan/
 
