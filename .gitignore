@@ -1,8 +1,7 @@
 __pycache__/
 phiCubed_31/
 phiCubed_31_space/
-
+.vscode/
 debug_spatial_integrate.py
-settings.json
 scratch/
 siyuan/
