@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 """Compute the three-point, one-loop function at zero and finite temperature.
 
-A pySecDec integrate file for evaluating the one-loop three-point function at
-zero and finite temperature.
+A pySecDec integrate file for evaluating the three-point, one-loop function in
+phi-cubed theory at zero and finite temperature.
 
 @author: Derek Harnett
 @email: derek.harnett@ufv.ca
@@ -28,7 +28,7 @@ spacetime_int_psd = IntegralLibrary('phiCubed_31/phiCubed_31_pylink.so')
 spacetime_int_psd.use_Vegas(flags=0, epsrel=REL_ERROR, epsabs=ABS_ERROR,
                               maxeval=MAX_ITER)
 
-# load pySecDec libraries for the finite temperature spatial integrals
+# load pySecDec libraries for the spatial integrals
 space_int_psd = IntegralLibrary('phiCubed_31_space/phiCubed_31_space_pylink.so')
 space_int_psd.use_Vegas(flags=0, epsrel=REL_ERROR, epsabs=ABS_ERROR,
                       maxeval=MAX_ITER)
@@ -46,7 +46,7 @@ def psd_to_sympy(expr):
     sympy expression
         an expansion in the symbol eps with both value and uncertainty parts
     """
-    # TODO: Check for NaN before converting.
+    #TODO: Check for NaN before converting.
     # What follows is a pretty dangerous hack.
     return sympify(expr.replace('nan', 'indeterminate').
                      replace(' +/- ', '*value+uncertainty*').
@@ -88,14 +88,15 @@ def get_uncertainty(psd_sympy_result):
 def dot_product(v1, v2):
     """Compute the Minkowski dot product of v1 and v2.
 
-    v1 & v2 can be arbitrary integer dimension. The first component is assumed
-    to be the timelike one.
+    v1 and v2 should be array_like objects with equal positive-integer
+    dimensions and with complex elements.
+    The first component is assumed to be the timelike one.
 
     Parameters
     ----------
-    v1 : complex tuple
+    v1 : array_like, complex
         Minkowski vector.
-    v2 : complex tuple
+    v2 : array_like, complex
         Minkowski vector.
 
     Returns
@@ -105,7 +106,16 @@ def dot_product(v1, v2):
     """
     v1_arr = np.array(v1)
     v2_arr = np.array(v2)
-    return v1_arr[0]*v2_arr[0] - sum(v1_arr[1:]*v2_arr[1:])
+    if v1_arr.shape != v2_arr.shape:
+        print('Error in dot_product: v1 and v2 are incompatible')
+        return None
+    if v1_arr.ndim == 0:
+        return v1_arr*v2_arr
+    elif v1_arr.ndim == 1:
+        return v1_arr[0]*v2_arr[0] - sum(v1_arr[1:]*v2_arr[1:])
+    else:
+        print('Error in dot_product: v1 and/or v2 not rank-1 objects')
+        return None
 
 
 def spatial_integral(p1_space, p2_space, M1M1, M2M2, M3M3):
