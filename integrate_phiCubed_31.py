@@ -124,10 +124,10 @@ def spatial_integral(p1_space, p2_space, M1M1, M2M2, M3M3):
 
     Parameters
     ----------
-    p1_space : complex 3-tuple
-        External 3-momentum.
-    p2_space : complex 3-tuple
-        External 3-momentum.
+    p1_space : array_like, rank-0 or rank-1, complex
+        External (Euclidean) spatial momentum.
+    p2_space : array_like, rank-0 or rank-1, complex
+        External (Euclidean) spatial momentum.
     M1M1 : complex
         Squared mass parameter.
     M2M2 : complex
@@ -140,14 +140,31 @@ def spatial_integral(p1_space, p2_space, M1M1, M2M2, M3M3):
     sympy expression
         Spatial integral.
     """
-    p1_space_mink = [1j*p1_space[0]] + p1_space[1:]
-    p2_space_mink = [1j*p2_space[0]] + p2_space[1:]
+    # TODO: Should I test p1_space and p2_space before the next two lines?
+    p1_space_eucl = np.array(p1_space, dtype=complex)
+    p2_space_eucl = np.array(p2_space, dtype=complex)
+
+    if p1_space_eucl.ndim > 1:
+        print('Error in spatial_integral: p1_space has rank greater than 1')
+        return None
+    if p2_space_eucl.ndim > 1:
+        print('Error in spatial_integral: p2_space has rank greater than 1')
+        return None
+    if p1_space_eucl.shape != p2_space_eucl.shape:
+        print('Error in spatial_integral: p1_space and p2_space have different shapes')
+        return None
+
+    if p1_space_eucl.ndim == 0:  # p2_space_eucl.ndim == p1_space_eucl.ndim
+        p1_space_mink = p1_space_eucl*1j
+        p2_space_mink = p2_space_eucl*1j
+    else:  # p1_space_eucl == 1
+        p1_space_mink = np.insert(p1_space_eucl[1:], 0, p1_space_eucl[0]*1j)
+        p2_space_mink = np.insert(p2_space_eucl[1:], 0, p2_space_eucl[0]*1j)
     p1p1 = dot_product(p1_space_mink, p1_space_mink)
     p2p2 = dot_product(p2_space_mink, p2_space_mink)
     p1p2 = dot_product(p1_space_mink, p2_space_mink)
-    missing_factor = -1
-    space_int_str = space_int_psd(complex_parameters=
-                               [p1p1, p2p2, p1p2, M1M1, M2M2, M3M3])[2]
+    missing_factor = -1  # factor omitted from pySecDec generate file
+    space_int_str = space_int_psd(complex_parameters=[p1p1, p2p2, p1p2, M1M1, M2M2, M3M3])[2]
     return expand(missing_factor*get_value(psd_to_sympy(space_int_str)))
 
 
