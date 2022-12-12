@@ -1,3 +1,7 @@
+"""Docstring
+"""
+import numpy as np
+
 def dot_product(v1, v2):
     """Compute the Minkowski dot product of v1 and v2.
 

@@ -1,3 +1,7 @@
+"""Docstring
+"""
+import numpy as np
+
 def p1_p2(qq):
     """Compute 4-vectors corresponding to the symmetric point qq.
 
@@ -26,3 +30,4 @@ def p1_p2(qq):
     p1 = np.array([p1t, p1x, 0, 0])
     p2 = np.array([p2t, p2x, 0, 0])
     return p1, p2
+    

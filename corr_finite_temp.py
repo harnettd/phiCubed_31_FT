@@ -1,3 +1,9 @@
+"""Docstring
+"""
+import numpy as np
+from sympy import expand, I
+import spatial_integral as spint
+
 def omega(n, beta):
     """Compute a Matsubara frequency.
 
@@ -49,8 +55,7 @@ def corr_finite_temp_n(p1, p2, m1, m2, m3, beta, n):
     M1M1 = m1**2 + (wn + p2_0_eucl)**2
     M2M2 = m2**2 + (wn - p1_0_eucl)**2
     M3M3 = m3**2 + wn**2
-    return expand(-I/beta*spatial_integral(p1_space, p2_space, M1M1, M2M2,
-                                               M3M3))
+    return expand(-I/beta*spint.use_psd(p1_space, p2_space, M1M1, M2M2, M3M3))
 
 
 def corr_finite_temp(p1, p2, m1, m2, m3, beta, nmin, nmax):

@@ -1,15 +1,22 @@
+"""Docstring
+"""
 from pySecDec.integral_interface import IntegralLibrary
+import numpy as np
+from dot_product import dot_product
+from sympy import expand
+from psd_output import *
+from scipy.integrate import tplquad
 
 REL_ERROR = 1e-6
 ABS_ERROR = 1e-9
 MAX_ITER = 1000000
 
 # load pySecDec libraries for the spatial integrals
-space_int_psd = IntegralLibrary('phiCubed_31_space/phiCubed_31_space_pylink.so')
-space_int_psd.use_Vegas(flags=0, epsrel=REL_ERROR, epsabs=ABS_ERROR,
+spatial_int_psd = IntegralLibrary('phiCubed_31_space/phiCubed_31_space_pylink.so')
+spatial_int_psd.use_Vegas(flags=0, epsrel=REL_ERROR, epsabs=ABS_ERROR,
                       maxeval=MAX_ITER)
 
-def spatial_integral(p1_space, p2_space, Delta_1, Delta_2, Delta_3):
+def use_psd(p1_space, p2_space, Delta_1, Delta_2, Delta_3):
     """
     Compute the spatial integral.
 
@@ -54,11 +61,11 @@ def spatial_integral(p1_space, p2_space, Delta_1, Delta_2, Delta_3):
     p2p2 = dot_product(p2_space_mink, p2_space_mink)
     p1p2 = dot_product(p1_space_mink, p2_space_mink)
     missing_factor = -1  # factor omitted from pySecDec generate file
-    space_int_str = space_int_psd(complex_parameters=[p1p1, p2p2, p1p2, Delta_1, Delta_2, Delta_3])[2]
-    return expand(missing_factor*get_value(psd_to_sympy(space_int_str)))
+    spatial_int_str = spatial_int_psd(complex_parameters=[p1p1, p2p2, p1p2, Delta_1, Delta_2, Delta_3])[2]
+    return expand(missing_factor*get_value(psd_to_sympy(spatial_int_str)))
 
 
-def spatial_integral_tplquad(p1_space, p2_space, Delta_1, Delta_2, Delta_3):
+def use_tplquad(p1_space, p2_space, Delta_1, Delta_2, Delta_3):
     """
     Compute the spatial integral.
 
