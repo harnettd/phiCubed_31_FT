@@ -2,7 +2,7 @@ from sympy import symbols, sympify
 
 eps, value, uncertainty, indeterminate = symbols('eps value uncertainty indeterminate')
 
-def psd_to_sympy(expr):
+def psd_to_sympy(psd_str_result):
     """Convert a pySecDec string output to a sympy expression.
 
     Parameters
@@ -17,9 +17,8 @@ def psd_to_sympy(expr):
     """
     #TODO: Check for NaN before converting.
     # What follows is a pretty dangerous hack.
-    return sympify(expr.replace('nan', 'indeterminate').
-                     replace(' +/- ', '*value+uncertainty*').
-                     replace(',', '+I*'))
+    return sympify(psd_str_result.replace('nan', 'indeterminate').
+        replace(' +/- ', '*value+uncertainty*').replace(',', '+I*'))
 
 
 def get_value(psd_sympy_result):
