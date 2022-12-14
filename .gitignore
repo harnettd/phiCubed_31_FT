@@ -1,9 +1,9 @@
+.vscode/
 __pycache__/
+
 phiCubed_31/
 phiCubed_31_space/
-.vscode/
-debug_spatial_integrate.py
 scratch/
 siyuan/
-scratch*
-integrate_phiCubed_31.py
+
+scratch.ipynb
