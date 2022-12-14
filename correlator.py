@@ -18,9 +18,8 @@ spacetime_int_psd = IntegralLibrary('phiCubed_31/phiCubed_31_pylink.so')
 spacetime_int_psd.use_Vegas(flags=0, epsrel=REL_ERROR, epsabs=ABS_ERROR,
                               maxeval=MAX_ITER)
 
-def use_psd(p1, p2, m1, m2, m3):
-    """
-    Compute the zero temperature correlator using pySecDec.
+def zero_temp_use_psd(p1, p2, m1, m2, m3):
+    """Compute the zero temperature correlator using pySecDec.
 
     Parameters
     ----------
@@ -49,7 +48,7 @@ def use_psd(p1, p2, m1, m2, m3):
     return expand(missing_prefactor*get_value(psd_to_sympy(result_str)))
 
 
-def use_trap(p1, p2, m1, m2, m3, k0_eucl_max, num_grid_pts):
+def zero_temp_use_trap(p1, p2, m1, m2, m3, k0_eucl_max, num_grid_pts):
     """
     Compute the zero temperature correlator through iterated integrals.
 
@@ -108,7 +107,7 @@ def omega(n, beta):
     return 2*np.pi*n/beta
 
 
-def corr_finite_temp_n(p1, p2, m1, m2, m3, beta, n):
+def finite_temp_term(p1, p2, m1, m2, m3, beta, n):
     """Compute the nth finite temperature spatial integral.
 
     Parameters
@@ -144,7 +143,7 @@ def corr_finite_temp_n(p1, p2, m1, m2, m3, beta, n):
     return expand(-I/beta*spint.use_psd(p1_space, p2_space, M1M1, M2M2, M3M3))
 
 
-def corr_finite_temp(p1, p2, m1, m2, m3, beta, nmin, nmax):
+def finite_temp(p1, p2, m1, m2, m3, beta, nmin, nmax):
     """Compute the finite temperature correlator.
 
     Parameters
@@ -171,6 +170,6 @@ def corr_finite_temp(p1, p2, m1, m2, m3, beta, nmin, nmax):
     real
         The finite temperature correlator.
     """
-    data = [corr_finite_temp_n(p1, p2, m1, m2, m3, beta, n)
+    data = [finite_temp_term(p1, p2, m1, m2, m3, beta, n)
             for n in range(nmin, nmax)]
     return sum(data)
