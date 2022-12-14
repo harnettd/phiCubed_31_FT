@@ -15,10 +15,9 @@ MAX_ITER = 1000000
 
 # load pySecDec libraries for the zero temperature spacetime integrals
 spacetime_int_psd = IntegralLibrary('phiCubed_31/phiCubed_31_pylink.so')
-spacetime_int_psd.use_Vegas(flags=0, epsrel=REL_ERROR, epsabs=ABS_ERROR,
-                              maxeval=MAX_ITER)
+spacetime_int_psd.use_Vegas(flags=0, epsrel=REL_ERROR, epsabs=ABS_ERROR, maxeval=MAX_ITER)
 
-def zero_temp_use_psd(p1, p2, m1, m2, m3):
+def zero_temp_use_psd(p1, p2, mass_1, mass_2, mass_3):
     """Compute the zero temperature correlator using pySecDec.
 
     Parameters
@@ -42,13 +41,12 @@ def zero_temp_use_psd(p1, p2, m1, m2, m3):
     p1p1 = spint.dot_product(p1, p1)
     p2p2 = spint.dot_product(p2, p2)
     p1p2 = spint.dot_product(p1, p2)
-    result_str = spacetime_int_psd(complex_parameters=
-                                   [p1p1, p2p2, p1p2, m1**2, m2**2, m3**2])[2]
+    result_str = spacetime_int_psd(complex_parameters=[p1p1, p2p2, p1p2, mass_1**2, mass_2**2, mass_3**2])[2]
     missing_prefactor = I  # missing from the generate file
     return expand(missing_prefactor*get_value(psd_to_sympy(result_str)))
 
 
-def zero_temp_use_trap(p1, p2, m1, m2, m3, k0_eucl_max, num_grid_pts):
+def zero_temp_use_trap(p1, p2, mass_1, mass_2, mass_3, k0_eucl_max, num_grid_pts):
     """
     Compute the zero temperature correlator through iterated integrals.
 
@@ -81,11 +79,10 @@ def zero_temp_use_trap(p1, p2, m1, m2, m3, k0_eucl_max, num_grid_pts):
     k0_eucl_grid = np.linspace(-k0_eucl_max, k0_eucl_max, num_grid_pts)
     spatial_int_vals = []
     for k0_eucl in k0_eucl_grid:
-        M1M1 = m1**2 + (k0_eucl + p2_0_eucl)**2
-        M2M2 = m2**2 + (k0_eucl - p1_0_eucl)**2
-        M3M3 = m3**2 + k0_eucl**2
-        spatial_int_vals.append(spint.use_psd(p1_space, p2_space, M1M1,
-                                                 M2M2, M3M3))
+        M1M1 = mass_1**2 + (k0_eucl + p2_0_eucl)**2
+        M2M2 = mass_2**2 + (k0_eucl - p1_0_eucl)**2
+        M3M3 = mass_3**2 + k0_eucl**2
+        spatial_int_vals.append(spint.use_psd(p1_space, p2_space, M1M1, M2M2, M3M3))
     return expand(-I/(2*np.pi)*trapezoid(spatial_int_vals, k0_eucl_grid))
 
 
@@ -107,7 +104,7 @@ def omega(n, beta):
     return 2*np.pi*n/beta
 
 
-def finite_temp_term(p1, p2, m1, m2, m3, beta, n):
+def finite_temp_term(p1, p2, mass_1, mass_2, mass_3, beta, n):
     """Compute the nth finite temperature spatial integral.
 
     Parameters
@@ -137,13 +134,13 @@ def finite_temp_term(p1, p2, m1, m2, m3, beta, n):
     p1_space = p1[1:]
     p2_space = p2[1:]
     wn = omega(n, beta)
-    M1M1 = m1**2 + (wn + p2_0_eucl)**2
-    M2M2 = m2**2 + (wn - p1_0_eucl)**2
-    M3M3 = m3**2 + wn**2
+    M1M1 = mass_1**2 + (wn + p2_0_eucl)**2
+    M2M2 = mass_2**2 + (wn - p1_0_eucl)**2
+    M3M3 = mass_3**2 + wn**2
     return expand(-I/beta*spint.use_psd(p1_space, p2_space, M1M1, M2M2, M3M3))
 
 
-def finite_temp(p1, p2, m1, m2, m3, beta, nmin, nmax):
+def finite_temp(p1, p2, mass_1, mass_2, mass_3, beta, n_min, n_max):
     """Compute the finite temperature correlator.
 
     Parameters
@@ -170,6 +167,6 @@ def finite_temp(p1, p2, m1, m2, m3, beta, nmin, nmax):
     real
         The finite temperature correlator.
     """
-    data = [finite_temp_term(p1, p2, m1, m2, m3, beta, n)
-            for n in range(nmin, nmax)]
+    data = [finite_temp_term(p1, p2, mass_1, mass_2, mass_3, beta, n)
+        for n in range(n_min, n_max)]
     return sum(data)
