@@ -1,10 +1,9 @@
 """Docstring
 """
 from pySecDec.integral_interface import IntegralLibrary
+from pysecdec_output_tools import *
 import numpy as np
-from dot_product import dot_product
 from sympy import expand
-from psd_output import *
 from scipy.integrate import tplquad
 
 REL_ERROR = 1e-6
@@ -15,6 +14,40 @@ MAX_ITER = 1000000
 spatial_int_psd = IntegralLibrary('phiCubed_31_space/phiCubed_31_space_pylink.so')
 spatial_int_psd.use_Vegas(flags=0, epsrel=REL_ERROR, epsabs=ABS_ERROR,
                       maxeval=MAX_ITER)
+
+
+def dot_product(vector_1, vector_2):
+    """Compute the Minkowski dot product of v1 and v2.
+
+    v1 and v2 should be array_like objects with equal positive-integer
+    dimensions and with complex elements.
+    The first component is assumed to be the timelike one.
+
+    Parameters
+    ----------
+    v1 : array_like, complex
+        Minkowski vector.
+    v2 : array_like, complex
+        Minkowski vector.
+
+    Returns
+    -------
+    Complex.
+        Dot product of v1 and v2.
+    """
+    v1_arr = np.array(vector_1)
+    v2_arr = np.array(vector_2)
+    if v1_arr.shape != v2_arr.shape:
+        print('Error in dot_product: v1 and v2 are incompatible')
+        return None
+    if v1_arr.ndim == 0:
+        return v1_arr*v2_arr
+    elif v1_arr.ndim == 1:
+        return v1_arr[0]*v2_arr[0] - sum(v1_arr[1:]*v2_arr[1:])
+    else:
+        print('Error in dot_product: v1 and/or v2 not rank-1 objects')
+        return None
+
 
 def use_psd(p1_space, p2_space, Delta_1, Delta_2, Delta_3):
     """
