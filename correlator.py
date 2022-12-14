@@ -1,11 +1,13 @@
 """Docstring
 """
-from pySecDec.integral_interface import IntegralLibrary
 import numpy as np
+from scipy.integrate import trapezoid
 from sympy import expand, I
+
+from pySecDec.integral_interface import IntegralLibrary
+
 from pysecdec_output_tools import *
 import spatial_integral as spint
-from scipy.integrate import trapezoid
 
 REL_ERROR = 1e-6
 ABS_ERROR = 1e-9

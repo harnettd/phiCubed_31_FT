@@ -1,10 +1,12 @@
 """Docstring
 """
-from pySecDec.integral_interface import IntegralLibrary
-from pysecdec_output_tools import *
 import numpy as np
-from sympy import expand
 from scipy.integrate import tplquad
+from sympy import expand
+
+from pySecDec.integral_interface import IntegralLibrary
+
+from pysecdec_output_tools import *
 
 REL_ERROR = 1e-6
 ABS_ERROR = 1e-9
