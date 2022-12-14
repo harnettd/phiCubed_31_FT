@@ -41,9 +41,9 @@ def zero_temp_use_psd(p1, p2, mass_1, mass_2, mass_3):
     p1p1 = spint.dot_product(p1, p1)
     p2p2 = spint.dot_product(p2, p2)
     p1p2 = spint.dot_product(p1, p2)
-    result_str = spacetime_int_psd(complex_parameters=[p1p1, p2p2, p1p2, mass_1**2, mass_2**2, mass_3**2])[2]
+    psd_str_result = spacetime_int_psd(complex_parameters=[p1p1, p2p2, p1p2, mass_1**2, mass_2**2, mass_3**2])[2]
     missing_prefactor = I  # missing from the generate file
-    return expand(missing_prefactor*get_value(psd_to_sympy(result_str)))
+    return expand(missing_prefactor*get_value(psd_to_sympy(psd_str_result)))
 
 
 def zero_temp_use_trap(p1, p2, mass_1, mass_2, mass_3, k0_eucl_max, num_grid_pts):
@@ -79,10 +79,10 @@ def zero_temp_use_trap(p1, p2, mass_1, mass_2, mass_3, k0_eucl_max, num_grid_pts
     k0_eucl_grid = np.linspace(-k0_eucl_max, k0_eucl_max, num_grid_pts)
     spatial_int_vals = []
     for k0_eucl in k0_eucl_grid:
-        M1M1 = mass_1**2 + (k0_eucl + p2_0_eucl)**2
-        M2M2 = mass_2**2 + (k0_eucl - p1_0_eucl)**2
-        M3M3 = mass_3**2 + k0_eucl**2
-        spatial_int_vals.append(spint.use_psd(p1_space, p2_space, M1M1, M2M2, M3M3))
+        Delta_1 = mass_1**2 + (k0_eucl + p2_0_eucl)**2
+        Delta_2 = mass_2**2 + (k0_eucl - p1_0_eucl)**2
+        Delta_3 = mass_3**2 + k0_eucl**2
+        spatial_int_vals.append(spint.use_psd(p1_space, p2_space, Delta_1, Delta_2, Delta_3))
     return expand(-I/(2*np.pi)*trapezoid(spatial_int_vals, k0_eucl_grid))
 
 
@@ -133,11 +133,11 @@ def finite_temp_term(p1, p2, mass_1, mass_2, mass_3, beta, n):
     p2_0_eucl = -1j*p2[0]
     p1_space = p1[1:]
     p2_space = p2[1:]
-    wn = omega(n, beta)
-    M1M1 = mass_1**2 + (wn + p2_0_eucl)**2
-    M2M2 = mass_2**2 + (wn - p1_0_eucl)**2
-    M3M3 = mass_3**2 + wn**2
-    return expand(-I/beta*spint.use_psd(p1_space, p2_space, M1M1, M2M2, M3M3))
+    omega_n = omega(n, beta)
+    Delta_1 = mass_1**2 + (omega_n + p2_0_eucl)**2
+    Delta_2 = mass_2**2 + (omega_n - p1_0_eucl)**2
+    Delta_3 = mass_3**2 + omega_n**2
+    return expand(-I/beta*spint.use_psd(p1_space, p2_space, Delta_1, Delta_2, Delta_3))
 
 
 def finite_temp(p1, p2, mass_1, mass_2, mass_3, beta, n_min, n_max):
@@ -167,6 +167,5 @@ def finite_temp(p1, p2, mass_1, mass_2, mass_3, beta, n_min, n_max):
     real
         The finite temperature correlator.
     """
-    data = [finite_temp_term(p1, p2, mass_1, mass_2, mass_3, beta, n)
-        for n in range(n_min, n_max)]
+    data = [finite_temp_term(p1, p2, mass_1, mass_2, mass_3, beta, n) for n in range(n_min, n_max)]
     return sum(data)
