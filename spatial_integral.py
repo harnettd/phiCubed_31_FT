@@ -149,3 +149,5 @@ def use_tplquad(p1_space, p2_space, Delta_1, Delta_2, Delta_3):
 
     result = tplquad(integrand, -np.inf, np.inf, -np.inf, np.inf, -np.inf, np.inf)
     return result
+
+
