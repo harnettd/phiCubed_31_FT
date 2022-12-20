@@ -46,9 +46,8 @@ def zero_temp_use_psd(p1, p2, mass_1, mass_2, mass_3):
     return expand(missing_prefactor*get_value(psd_to_sympy(psd_str_result)))
 
 
-def zero_temp_use_trap(p1, p2, mass_1, mass_2, mass_3, k0_eucl_max, num_grid_pts):
-    """
-    Compute the zero temperature correlator through iterated integrals.
+def zero_temp_use_trap(p1, p2, mass_1, mass_2, mass_3, k0_eucl_grid):
+    """Compute the zero temperature correlator through iterated integrals.
 
     Parameters
     ----------
@@ -62,10 +61,8 @@ def zero_temp_use_trap(p1, p2, mass_1, mass_2, mass_3, k0_eucl_max, num_grid_pts
         Propagator mass.
     m3 : complex
         Propagator mass.
-    k0_eucl_max : real
-        k0_eucl upper limit of integration
-    num_grid_pts : integer
-        Number of grid points to use in the trapezoid rule.
+    k0_eucl_grid : array-like
+        grid to be used in the trapezoid rule
 
     Returns
     -------
@@ -76,14 +73,13 @@ def zero_temp_use_trap(p1, p2, mass_1, mass_2, mass_3, k0_eucl_max, num_grid_pts
     p2_0_eucl = -1j*p2[0]
     p1_space = p1[1:]
     p2_space = p2[1:]
-    k0_eucl_grid = np.linspace(-k0_eucl_max, k0_eucl_max, num_grid_pts)
-    spatial_int_vals = []
+    spatial_integral_data = []
     for k0_eucl in k0_eucl_grid:
         Delta_1 = mass_1**2 + (k0_eucl + p2_0_eucl)**2
         Delta_2 = mass_2**2 + (k0_eucl - p1_0_eucl)**2
         Delta_3 = mass_3**2 + k0_eucl**2
-        spatial_int_vals.append(spint.use_psd(p1_space, p2_space, Delta_1, Delta_2, Delta_3))
-    return expand(-I/(2*np.pi)*trapezoid(spatial_int_vals, k0_eucl_grid))
+        spatial_integral_data.append(spint.use_psd(p1_space, p2_space, Delta_1, Delta_2, Delta_3))
+    return expand(-I/(2*np.pi)*trapezoid(spatial_integral_data, k0_eucl_grid))
 
 
 def omega(n, beta):
