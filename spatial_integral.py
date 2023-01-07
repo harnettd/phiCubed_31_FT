@@ -123,8 +123,8 @@ def use_tplquad(p1_space, p2_space, Delta_1, Delta_2, Delta_3):
         Spatial integral.
     """
     # TODO: Should I test p1_space and p2_space before the next two lines?
-    p1_space_eucl = np.array(p1_space, dtype=float)
-    p2_space_eucl = np.array(p2_space, dtype=float)
+    p1_space_eucl = np.array(p1_space, dtype=complex)
+    p2_space_eucl = np.array(p2_space, dtype=complex)
 
     if p1_space_eucl.ndim != 1:
         print('Error in spatial_integral: p1_space is not rank 1')
@@ -141,13 +141,19 @@ def use_tplquad(p1_space, p2_space, Delta_1, Delta_2, Delta_3):
 
     p1x, p1y, p1z = p1_space_eucl
     p2x, p2y, p2z = p2_space_eucl
+
     def integrand(kx, ky, kz):
         denom_factor_1 = kx**2 + ky**2 + kz**2 + Delta_3
         denom_factor_2 = (kx + p2x)**2 + (ky + p2y)**2 + (kz + p2z)**2 + Delta_1
         denom_factor_3 = (kx - p1x)**2 + (ky - p1y)**2 + (kz - p1z)**2 + Delta_2
         return 1/(8*np.pi**3 * denom_factor_1 * denom_factor_2 * denom_factor_3)
 
-    result = tplquad(integrand, -np.inf, np.inf, -np.inf, np.inf, -np.inf, np.inf)
-    return result
+    def integrand_real(kx, ky, kz):
+        return (integrand(kx, ky, kz)).real
 
+    def integrand_imag(kx, ky, kz):
+        return (integrand(kx, ky, kz)).imag
 
+    result_real = tplquad(integrand_real, -np.inf, np.inf, -np.inf, np.inf, -np.inf, np.inf)
+    result_imag = tplquad(integrand_imag, -np.inf, np.inf, -np.inf, np.inf, -np.inf, np.inf)
+    return result_real[0] + 1j * result_imag[0], result_real[1] + 1j * result_imag[1]
