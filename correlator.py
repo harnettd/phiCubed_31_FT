@@ -183,7 +183,7 @@ def p1_p2(qq):
         4-momentum.
     """
     if qq >= 0:
-        p1x = np.sqrt(np.abs(qq))*1j
+        p1x = np.sqrt(qq)*1j
         p2t = 0.5*np.sqrt(3*qq)
     elif qq < 0:
         p1x = np.sqrt(np.abs(qq))
