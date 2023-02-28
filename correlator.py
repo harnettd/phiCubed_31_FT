@@ -6,6 +6,7 @@ from sympy import expand, I
 
 from pySecDec.integral_interface import IntegralLibrary
 
+from dot_product import dot_product
 from pysecdec_output_tools import *
 import spatial_integral as spint
 
@@ -38,9 +39,9 @@ def zero_temp_use_psd(p1, p2, mass_1, mass_2, mass_3):
     sympy expression
         Zero temperature correlator.
     """
-    p1p1 = spint.dot_product(p1, p1)
-    p2p2 = spint.dot_product(p2, p2)
-    p1p2 = spint.dot_product(p1, p2)
+    p1p1 = dot_product(p1, p1)
+    p2p2 = dot_product(p2, p2)
+    p1p2 = dot_product(p1, p2)
     psd_str_result = spacetime_int_psd(complex_parameters=[p1p1, p2p2, p1p2, mass_1**2, mass_2**2, mass_3**2])[2]
     missing_prefactor = I  # missing from the generate file
     return expand(missing_prefactor*get_value(psd_to_sympy(psd_str_result)))
