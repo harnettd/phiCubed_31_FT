@@ -82,6 +82,18 @@ def zero_temp_use_trap(p1, p2, mass_1, mass_2, mass_3, k0_eucl_grid):
     return expand(-I/(2*np.pi)*trapezoid(spatial_integral_data, k0_eucl_grid))
 
 
+def dimensionless_Gamma_zero_temp(q1, q2, xi1, xi2, xi3, M):
+    p1 = [x * M for x in q1[1:]]
+    p1.insert(0, 1j * q1[0])
+    p2 = [x * M for x in q2[1:]]
+    p2.insert(0, 1j * q2[0])
+    m1 = xi1 * M
+    m2 = xi2 * M
+    m3 = xi3 * M
+    Sigma = zero_temp_use_psd(p1, p2, m1, m2, m3)
+    return expand(I * Sigma * M**2)
+
+
 def omega(n, beta):
     """Compute a Matsubara frequency.
 
@@ -165,6 +177,23 @@ def finite_temp(p1, p2, mass_1, mass_2, mass_3, beta, n_min, n_max):
     """
     data = [finite_temp_term(p1, p2, mass_1, mass_2, mass_3, beta, n) for n in range(n_min, n_max)]
     return sum(data)
+
+
+def dimensionless_Gamma_finite_temp(l1, q1, l2, q2, xi1, xi2, xi3, a, n_min, n_max, M):
+    """Compute the dimensionless vertex function (Gamma)"""
+    M_over_a = M / a
+    p1t = 1j * l1 * M_over_a
+    p1 = [x * M_over_a for x in q1]  # spatial components
+    p1.insert(0, p1t)
+    p2t = 1j * l2 * M_over_a
+    p2 = [x * M_over_a for x in q2]  # spatial components
+    p2.insert(0, p2t)
+    m1 = M * xi1
+    m2 = M * xi2
+    m3 = M * xi3
+    beta = 2 * np.pi / M_over_a
+    Sigma = finite_temp(p1, p2, m1, m2, m3, beta, n_min, n_max)
+    return expand(M**2 * I * Sigma)
 
 
 def p1_p2(qq):
