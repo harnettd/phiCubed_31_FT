@@ -7,7 +7,7 @@ from sympy import expand, I
 from pySecDec.integral_interface import IntegralLibrary
 
 from dot_product import dot_product
-from pysecdec_output_tools import *
+from pysecdec_output_tools import get_value, psd_to_sympy
 import spatial_integral as spint
 
 REL_ERROR = 1e-6
