@@ -29,3 +29,5 @@ def p1_p2(qq):
     p2x = -0.5*p1x
     p1 = np.array([p1t, p1x, 0, 0])
     p2 = np.array([p2t, p2x, 0, 0])
+
+    return p1, p2
