@@ -122,7 +122,7 @@ def correlator_partial_sum(p1, p2, mass_1, mass_2, mass_3, beta, n_min, n_max):
     return sum(seq)
 
 
-def vertex_function_partial_sum(l1, q1, l2, q2, xi1, xi2, xi3, a, n_min, n_max, M):
+def dimensionless_vertex_function_partial_sum(l1, q1, l2, q2, xi1, xi2, xi3, a, n_min, n_max, M):
     """Compute the dimensionless vertex function (Gamma)"""
     M_over_a = M / a
     p1t = 1j * l1 * M_over_a
