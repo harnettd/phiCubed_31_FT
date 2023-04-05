@@ -7,7 +7,8 @@ Functions:
     correlator_use_trapezoid(array-like, array-like, complex, complex, complex, array)
         -> sympy object
 
-    dimensionless_vertex_funxtion() ->
+    dimensionless_vertex_funxtion(sequence, sequence, sequence, float) 
+        -> sympy object
 """
 import numpy as np
 from scipy.integrate import trapezoid
@@ -86,13 +87,31 @@ def correlator_use_trapezoid(p1, p2, mass_1, mass_2, mass_3, k0_eucl_grid):
     return expand(-I / (2 * np.pi) * trapezoid(spatial_integral_data, k0_eucl_grid))
 
 
-def dimensionless_vertex_function(q1, q2, xi1, xi2, xi3, M):
-    p1 = [x * M for x in q1[1:]]
-    p1.insert(0, 1j * q1[0])
-    p2 = [x * M for x in q2[1:]]
-    p2.insert(0, 1j * q2[0])
-    m1 = xi1 * M
-    m2 = xi2 * M
-    m3 = xi3 * M
-    Sigma = correlator_use_psd(p1, p2, m1, m2, m3)
-    return expand(I * Sigma * M**2)
+def dimensionless_correlator_use_psd(q1, q2, xis, M):
+    """Compute the dimensionless zero temperature correlator using pySecDec.
+
+    Parameters:
+        q1 (four-element complex sequence): First dimensionless Minkowski
+            external momentum
+        q2 (four-element complex sequence): Second dimensionless Minkowski
+            external momentum
+        xis (three-element positive real sequence): Dimensionless propagator
+            masses
+        M (real): Mass scale, i.e., the largest propagator mass
+
+    One element of xis should be 1. The other two should be less than or equal
+        to 1.
+
+    Returns:
+        sympy object: Dimensionless zero temperature correlator
+    """
+    def scale_up(seq, scale):
+        """Multiply each element of the sequence seq by scale."""
+        return [s * scale for s in seq]
+
+
+    p1 = scale_up(q1, M)
+    p2 = scale_up(q2, M)
+    masses = scale_up(xis, M)
+
+    return expand(correlator_use_psd(p1, p2, *masses) * M**2)
