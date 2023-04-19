@@ -12,11 +12,12 @@ Functions:
 """
 import numpy as np
 from scipy.integrate import trapezoid
-from sympy import expand, I
+from sympy import expand, I, symbols
 
 from pySecDec.integral_interface import IntegralLibrary
 
 from dot_product import dot_product
+from mult import mult
 from pysecdec_output_tools import get_uncertainty, get_value, psd_to_sympy
 import spatial_integral as spint
 from wick_rotation import to_euclidean
@@ -27,7 +28,10 @@ MAX_ITER = 1_000_000
 
 # load pySecDec libraries for the zero temperature spacetime integrals
 spacetime_int_psd = IntegralLibrary('phiCubed_31/phiCubed_31_pylink.so')
-spacetime_int_psd.use_Vegas(flags=0, epsrel=REL_ERROR, epsabs=ABS_ERROR, maxeval=MAX_ITER)
+spacetime_int_psd.use_Vegas(
+    flags=0, epsrel=REL_ERROR, epsabs=ABS_ERROR, maxeval=MAX_ITER)
+
+eps = symbols('eps')
 
 
 def correlator_use_psd(p1, p2, masses):
@@ -44,35 +48,19 @@ def correlator_use_psd(p1, p2, masses):
         sympy object: Zero temperature correlator value
         sympy object: Zero temperature correlator uncertainty
     """
-    def apply_prefactor(accessor, sympy_result, prefactor):
-        """Multiply pySecDec result by the prefactor.
-
-        Parameters:
-            accessor (function): get_value or get_uncertainty
-            sympy_result (sympy object): pySecDec result
-            prefactor (sympy object): Additional prefactor
-
-        Returns:
-            sympy object: Zero temperature correlator value or uncertainty
-        """
-        return expand(prefactor * accessor(sympy_result))
-
     dot_products =\
         dot_product(p1, p1), dot_product(p2, p2), dot_product(p1, p2)
-    squared_masses = masses[0]**2, masses[1]**2, masses[2]**2
-
+    squared_masses = [mass**2 for mass in masses]
     psd_str_results =\
         spacetime_int_psd(complex_parameters=[*dot_products, *squared_masses])
     psd_str_result = psd_str_results[2]
 
     psd_sympy_result = psd_to_sympy(psd_str_result)
-    missing_prefactor = I  # missing from the generate file
-    value = apply_prefactor(get_value, psd_sympy_result, missing_prefactor)
-    # Problems here:
-    uncertainty =\
-        apply_prefactor(get_uncertainty, psd_sympy_result, missing_prefactor)
+    psd_sympy_val = get_value(psd_sympy_result)
+    psd_sympy_err = get_uncertainty(psd_sympy_result)
 
-    return value, uncertainty
+    missing_factor = 1j  # missing factor from the pySecDec generate file
+    return mult(missing_factor, [psd_sympy_val, psd_sympy_err])
 
 
 def correlator_use_trapezoid(p1, p2, masses, k0_eucl_grid):
@@ -102,10 +90,11 @@ def correlator_use_trapezoid(p1, p2, masses, k0_eucl_grid):
         delta_2 = masses[1]**2 + (k0_eucl - p1_t_eucl)**2
         delta_3 = masses[2]**2 + k0_eucl**2
         deltas = delta_1, delta_2, delta_3
-        spatial_integral_data.append(spint.use_psd(p1_space, p2_space, *deltas))
+        spatial_integral_data.append(
+            spint.use_psd(p1_space, p2_space, deltas)[0])
 
-    return expand(-I / (2 * np.pi) *\
-        trapezoid(spatial_integral_data, k0_eucl_grid))
+    return expand(-I / (2 * np.pi) *
+                  trapezoid(spatial_integral_data, k0_eucl_grid))
 
 
 def dimensionless_correlator_use_psd(q1, q2, xis, M):
@@ -123,12 +112,12 @@ def dimensionless_correlator_use_psd(q1, q2, xis, M):
         to 1.
 
     Returns:
-        sympy object: Dimensionless zero temperature correlator
+        sympy object: Dimensionless zero temperature correlator value
+        sympy object: Dimensionless zero temperature correlator uncertainty
     """
     def scale_up(seq, scale):
         """Multiply each element of the sequence seq by scale."""
         return [s * scale for s in seq]
-
 
     p1 = scale_up(q1, M)
     p2 = scale_up(q2, M)
