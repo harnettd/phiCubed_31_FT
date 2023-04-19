@@ -7,14 +7,18 @@ Functions:
         list of sympy objects
     correlator_partial_sum(sequence, sequence, sequence, float, range) ->
         sympy object
-    accumulate(sequence) -> list
     correlator_partial_sum_sequence(sequence, sequence, sequence, float, range) ->
-        list of sympy objects, list of sympy objects
+        sequence, sequence, sequence, sequence
+    dimensionless_vertex_function_partial_sum(
+        int, sequence, int, sequence, sequence, float, indices, float) -> 
+        sympy object
 """
 import numpy as np
 from sympy import expand, I
 
+from mult import mult
 import spatial_integral as spint
+from wick_rotation import to_euclidean, to_minkowski
 
 
 def omega(index, beta):
@@ -43,17 +47,26 @@ def correlator_term(p1, p2, masses, beta, index):
         index (int): Series index
 
     Returns:
-        sympy object: a finite temperature spatial integral
+        sympy object: a finite temperature spatial integral value
+        sympy object: a finite temperature spatial integral uncertainty
     """
-    p1_0_eucl = -1j * p1[0]
-    p2_0_eucl = -1j * p2[0]
-    p1_space = p1[1:]
-    p2_space = p2[1:]
+    p1_eucl = to_euclidean(p1)
+    p2_eucl = to_euclidean(p2)
+    p1_t_eucl = p1_eucl[0]
+    p2_t_eucl = p2_eucl[0]
+    p1_space = p1_eucl[1:]
+    p2_space = p2_eucl[1:]
+
     omega_n = omega(index, beta)
-    delta_1 = masses[0]**2 + (omega_n + p2_0_eucl)**2
-    delta_2 = masses[1]**2 + (omega_n - p1_0_eucl)**2
+
+    delta_1 = masses[0]**2 + (omega_n + p2_t_eucl)**2
+    delta_2 = masses[1]**2 + (omega_n - p1_t_eucl)**2
     delta_3 = masses[2]**2 + omega_n**2
-    return expand(-I / beta * spint.use_psd(p1_space, p2_space, delta_1, delta_2, delta_3))
+    deltas = delta_1, delta_2, delta_3
+
+    spatial_integral_result = spint.use_psd(p1_space, p2_space, deltas)
+    missing_factor = -1 / beta * 1j  # omitted from the generate file
+    return mult(missing_factor, spatial_integral_result)
 
 
 def correlator_sequence(p1, p2, masses, beta, indices):
@@ -87,20 +100,19 @@ def correlator_partial_sum(p1, p2, masses, beta, indices):
         indices (range of int): Series indices
 
     Returns:
-        sympy object: a sum of finite temperature spatial integrals
+        sympy object: The sum of finite temperature spatial integrals values
+        sympy object: The sum of finite temperature spatial integrals
+            uncertainties
     """
+
+    def col_sum(seq, col):
+        """Total the column col of sequence seq."""
+        return sum([s[col] for s in seq])
+
     seq = correlator_sequence(p1, p2, masses, beta, indices)
-    return sum(seq)
-
-
-def accumulate(seq):
-    """Returns a partial sum list corresponding to the sequence seq."""
-    if len(seq) == 1:
-        return list(seq)
-    else:
-        partial_sums = accumulate(seq[:-1])
-        partial_sums.append(partial_sums[-1] + seq[-1])
-        return partial_sums
+    val = col_sum(seq, 0)
+    err = col_sum(seq, 1)
+    return val, err
 
 
 def correlator_partial_sum_sequence(p1, p2, masses, beta, max_index):
@@ -116,43 +128,95 @@ def correlator_partial_sum_sequence(p1, p2, masses, beta, max_index):
         max_index (positive int): Series index (included)
 
     Returns:
-        list of sympy objects: a list of sums of finite temperature spatial
-            integrals
-        list of sympy objects: a list of finite temperature spatial
-            integrals
+        list of sympy objects: partial sums of values of finite temperature spatial integrals
+        list of sympy objects: partial sums of uncertainties in finite temperature spatial integrals
+        list of sympy objects: values of finite temperature spatial integrals
+        list of sympy objects: uncertainties in finite temperature spatial integrals
     """
-    def add_lists(list_1, list_2):
+    def accumulate(seq):
+        """Returns a partial sum list corresponding to the sequence seq."""
+        if len(seq) == 1:
+            return list(seq)
+        else:
+            partial_sums = accumulate(seq[:-1])
+            partial_sums.append(partial_sums[-1] + seq[-1])
+            return partial_sums
+
+    def add_lists(seq_1, seq_2):
         """Add two sequences element-by-element.
-      
+
         It is assumed that the two lists have equal length.
         """
-        return [list_1[index] + list_2[index] for index in range(len(list_1))]
+        return [seq_1[index] + seq_2[index] for index in range(len(seq_1))]
 
-    seq = correlator_sequence(p1, p2, masses, beta, range(-max_index, max_index + 1))
-    neg_index_corr_vals = seq[:max_index]
-    neg_index_corr_vals.reverse()
-    zero_index_corr_val = seq[max_index]
-    pos_index_corr_vals = seq[max_index + 1:]
+    def col(arr, col_num):
+        """Return the col_num column of a rank-2 array arr."""
+        return [arr[row_num][col_num] for row_num in range(len(arr))]
 
-    corr_seq = add_lists(neg_index_corr_vals, pos_index_corr_vals)
-    corr_seq.insert(0, zero_index_corr_val)
-    partial_sum_seq = accumulate(corr_seq)
+    def partial_sums(seq):
+        """Re-arrange and partial sum a sequence.
 
-    return partial_sum_seq, corr_seq
+        Parameters:
+            seq (sequence): Sequence to be partial summed
+
+        Returns:
+            sequence: Sequence of partial sums
+            sequence: Re-arranged sequence
+        """
+        mid_index = int((len(seq) - 1) / 2)
+        left_index_seq = seq[:mid_index]
+        left_index_seq.reverse()
+        right_index_seq = seq[mid_index + 1:]
+        re_arranged_seq = add_lists(left_index_seq, right_index_seq)
+        re_arranged_seq.insert(0, seq[mid_index])
+        return accumulate(re_arranged_seq), re_arranged_seq
+
+    corr_results = correlator_sequence(p1, p2, masses, beta,
+                                       range(-max_index, max_index + 1))
+    corr_vals = col(corr_results, 0)
+    corr_errs = col(corr_results, 1)
+
+    corr_vals_partial_sums = partial_sums(corr_vals)
+    corr_errs_partial_sums = partial_sums(corr_errs)
+
+    return corr_vals_partial_sums[0], corr_errs_partial_sums[0],\
+        corr_vals_partial_sums[1], corr_errs_partial_sums[1],
 
 
-def dimensionless_vertex_function_partial_sum(l1, q1, l2, q2, xi1, xi2, xi3, a, n_min, n_max, M):
-    """Compute the dimensionless vertex function (Gamma)"""
-    M_over_a = M / a
-    p1t = 1j * l1 * M_over_a
-    p1 = [x * M_over_a for x in q1]  # spatial components
-    p1.insert(0, p1t)
-    p2t = 1j * l2 * M_over_a
-    p2 = [x * M_over_a for x in q2]  # spatial components
-    p2.insert(0, p2t)
-    m1 = M * xi1
-    m2 = M * xi2
-    m3 = M * xi3
-    beta = 2 * np.pi / M_over_a
-    Pi = correlator_partial_sum(p1, p2, m1, m2, m3, beta, n_min, n_max)
-    return expand(M**2 * I * Pi)
+def dimensionless_vertex_function_partial_sum(el_1, q1_space, el_2, q2_space, xis, a, indices, mass_scale):
+    """Compute the dimensionless vertex function (i.e., Gamma).
+
+    Parameters:
+        el_1 (int): Integer corresponding to first Matsubara frequency
+        q1_space (three-element sequence of complex): First dimensionless
+            spatial momentum
+        el_2 (int): Integer corresponding to second Matsubara frequency
+        q2_space (three-element sequence of complex): Second dimensionless
+            spatial momentum
+        xis (three-element sequence of float): Dimensionless propagator masses
+        a (float): Dimensionless inverse temperature
+        indices (range of int): Series indices
+        mass_scale (float): The largest propagator mass
+
+    Returns:
+        sympy object: dimensionless vertex function
+    """
+    def mult(sequence, scalar):
+        """Multiply each element of sequence by scalar."""
+        return [s * scalar for s in sequence]
+
+    def make_minkowski_vector(el, q_space):
+        """Make a Minkowski vector."""
+        p_t_eucl = el * mass_scale / a
+        p_eucl = mult(q_space, mass_scale / a)  # spatial components
+        p_eucl.insert(0, p_t_eucl)
+        return to_minkowski(p_eucl)
+
+    p1_mink = make_minkowski_vector(el_1, q1_space)
+    p2_mink = make_minkowski_vector(el_2, q2_space)
+    masses = mult(xis, mass_scale)
+    beta = 2 * np.pi * a / mass_scale
+
+    corr = correlator_partial_sum(p1_mink, p2_mink, masses, beta, indices)
+
+    return expand(I * corr * mass_scale**2)
