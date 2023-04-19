@@ -56,8 +56,8 @@ def mult(scalar, psd_result):
 
 # testing
 if __name__ == '__main__':
-    psd_result = 2.0 + sp.I * 3.0 + sp.Order(eps), 0.2 + sp.I * 0.3 + sp.Order(eps)
+    result = 2.0 + sp.I * 3.0 + sp.Order(eps), 0.2 + sp.I * 0.3 + sp.Order(eps)
 
-    print(mult(2 + 3j, psd_result))
-    print(mult(1j, psd_result))
-    print(mult(-1, psd_result))
+    print(mult(2 + 3j, result))
+    print(mult(1j, result))
+    print(mult(-1, result))
