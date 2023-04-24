@@ -37,3 +37,9 @@ def to_minkowski(vector):
     vector_mink = vector_list[1:]
     vector_mink.insert(0, vector_t_mink)
     return vector_mink
+
+
+if __name__ == '__main__':
+    vec = 1, 2, 3, 4
+    print(to_euclidean(vec))
+    print(to_minkowski(vec))
