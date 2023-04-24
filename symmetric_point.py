@@ -29,3 +29,17 @@ def p1_p2(qq):
     p2 = np.array([p2t, p2x, 0, 0])
 
     return p1, p2
+
+
+if __name__ == '__main__':
+    from dot_product import dot_product
+    tests = 2, -2
+    for test in tests:
+        vectors = p1_p2(test)
+        print(vectors[0])
+        print(vectors[1])
+        dot_products = dot_product(vectors[0], vectors[0]),\
+            dot_product(vectors[1], vectors[1]),\
+            dot_product(vectors[0], vectors[0])
+        print(*dot_products)
+        print()
