@@ -5,16 +5,16 @@ Functions:
     correlator_term(sequence, sequence, sequence, float, int) -> sympy object
     correlator_sequence(sequence, sequence, sequence, float, range) ->
         list of sympy objects
-    correlator_partial_sum(sequence, sequence, sequence, float, range) ->
-        sympy object
+    get_col(array, index) -> sequence
+    correlator_sum(sequence, sequence, sequence, float, range) -> sympy object
+    partial_sums(sequence) -> sequence, sequence
     correlator_partial_sum_sequence(sequence, sequence, sequence, float, range) ->
         sequence, sequence, sequence, sequence
     dimensionless_vertex_function_partial_sum(
-        int, sequence, int, sequence, sequence, float, indices, float) -> 
+        int, sequence, int, sequence, sequence, float, indices, float) ->
         sympy object
 """
 import numpy as np
-from sympy import expand, I
 
 from mult import mult
 import spatial_integral as spint
@@ -87,7 +87,12 @@ def correlator_sequence(p1, p2, masses, beta, indices):
     return [correlator_term(p1, p2, masses, beta, index) for index in indices]
 
 
-def correlator_partial_sum(p1, p2, masses, beta, indices):
+def get_col(arr, col):
+    """Return the column col of array arr."""
+    return [row[col] for row in arr]
+
+
+def correlator_sum(p1, p2, masses, beta, indices):
     """Compute a sum of finite temperature spatial integrals.
 
     Parameters:
@@ -104,15 +109,46 @@ def correlator_partial_sum(p1, p2, masses, beta, indices):
         sympy object: The sum of finite temperature spatial integrals
             uncertainties
     """
-
-    def col_sum(seq, col):
-        """Total the column col of sequence seq."""
-        return sum([s[col] for s in seq])
-
     seq = correlator_sequence(p1, p2, masses, beta, indices)
-    val = col_sum(seq, 0)
-    err = col_sum(seq, 1)
+    val = sum(get_col(seq, 0))
+    err = sum(get_col(seq, 1))
     return val, err
+
+
+def partial_sums(seq):
+    """Re-arrange and partial sum a sequence.
+
+    Parameters:
+        seq (sequence): Sequence to be partial summed
+
+    Returns:
+        sequence: Sequence of partial sums
+        sequence: Re-arranged sequence
+    """
+
+    def accumulate(seq):
+        """Returns a partial sum list corresponding to the sequence seq."""
+        if len(seq) == 1:
+            return list(seq)
+        else:
+            accumulation = accumulate(seq[:-1])
+            accumulation.append(accumulation[-1] + seq[-1])
+            return accumulation
+
+    def add_lists(seq_1, seq_2):
+        """Add two sequences element-by-element.
+
+        It is assumed that the two lists have equal length.
+        """
+        return [seq_1[index] + seq_2[index] for index in range(len(seq_1))]
+
+    mid_index = int((len(seq) - 1) / 2)
+    left_index_seq = seq[:mid_index]
+    left_index_seq.reverse()
+    right_index_seq = seq[mid_index + 1:]
+    re_arranged_seq = add_lists(left_index_seq, right_index_seq)
+    re_arranged_seq.insert(0, seq[mid_index])
+    return accumulate(re_arranged_seq), re_arranged_seq
 
 
 def correlator_partial_sum_sequence(p1, p2, masses, beta, max_index):
@@ -133,48 +169,10 @@ def correlator_partial_sum_sequence(p1, p2, masses, beta, max_index):
         list of sympy objects: values of finite temperature spatial integrals
         list of sympy objects: uncertainties in finite temperature spatial integrals
     """
-    def accumulate(seq):
-        """Returns a partial sum list corresponding to the sequence seq."""
-        if len(seq) == 1:
-            return list(seq)
-        else:
-            partial_sums = accumulate(seq[:-1])
-            partial_sums.append(partial_sums[-1] + seq[-1])
-            return partial_sums
-
-    def add_lists(seq_1, seq_2):
-        """Add two sequences element-by-element.
-
-        It is assumed that the two lists have equal length.
-        """
-        return [seq_1[index] + seq_2[index] for index in range(len(seq_1))]
-
-    def col(arr, col_num):
-        """Return the col_num column of a rank-2 array arr."""
-        return [arr[row_num][col_num] for row_num in range(len(arr))]
-
-    def partial_sums(seq):
-        """Re-arrange and partial sum a sequence.
-
-        Parameters:
-            seq (sequence): Sequence to be partial summed
-
-        Returns:
-            sequence: Sequence of partial sums
-            sequence: Re-arranged sequence
-        """
-        mid_index = int((len(seq) - 1) / 2)
-        left_index_seq = seq[:mid_index]
-        left_index_seq.reverse()
-        right_index_seq = seq[mid_index + 1:]
-        re_arranged_seq = add_lists(left_index_seq, right_index_seq)
-        re_arranged_seq.insert(0, seq[mid_index])
-        return accumulate(re_arranged_seq), re_arranged_seq
-
     corr_results = correlator_sequence(p1, p2, masses, beta,
                                        range(-max_index, max_index + 1))
-    corr_vals = col(corr_results, 0)
-    corr_errs = col(corr_results, 1)
+    corr_vals = get_col(corr_results, 0)
+    corr_errs = get_col(corr_results, 1)
 
     corr_vals_partial_sums = partial_sums(corr_vals)
     corr_errs_partial_sums = partial_sums(corr_errs)
@@ -199,24 +197,26 @@ def dimensionless_vertex_function_partial_sum(el_1, q1_space, el_2, q2_space, xi
         mass_scale (float): The largest propagator mass
 
     Returns:
-        sympy object: dimensionless vertex function
+        sympy object: dimensionless vertex function value
+        sympy object: dimensionless vertex function uncertainty
     """
-    def mult(sequence, scalar):
+
+    def rescale(sequence, scalar):
         """Multiply each element of sequence by scalar."""
         return [s * scalar for s in sequence]
 
     def make_minkowski_vector(el, q_space):
-        """Make a Minkowski vector."""
+        """Return a Minkowski vector."""
         p_t_eucl = el * mass_scale / a
-        p_eucl = mult(q_space, mass_scale / a)  # spatial components
+        p_eucl = rescale(q_space, mass_scale / a)  # spatial components
         p_eucl.insert(0, p_t_eucl)
         return to_minkowski(p_eucl)
 
     p1_mink = make_minkowski_vector(el_1, q1_space)
     p2_mink = make_minkowski_vector(el_2, q2_space)
-    masses = mult(xis, mass_scale)
+    masses = rescale(xis, mass_scale)
     beta = 2 * np.pi * a / mass_scale
 
-    corr = correlator_partial_sum(p1_mink, p2_mink, masses, beta, indices)
-
-    return expand(I * corr * mass_scale**2)
+    corr = correlator_sum(p1_mink, p2_mink, masses, beta, indices)
+    corr_to_dimensionless_vert_factor = mass_scale**2 * 1j
+    return mult(corr_to_dimensionless_vert_factor, corr)
