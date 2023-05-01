@@ -181,7 +181,7 @@ def correlator_partial_sum_sequence(p1, p2, masses, beta, max_index):
         corr_vals_partial_sums[1], corr_errs_partial_sums[1],
 
 
-def dimensionless_vertex_function_partial_sum(el_1, q1_space, el_2, q2_space, xis, a, indices, mass_scale):
+def dimensionless_vertex_function_partial_sum(el_1, q1_space, el_2, q2_space, xis, a, indices, mass_scale=1):
     """Compute the dimensionless vertex function (i.e., Gamma).
 
     Parameters:
@@ -206,7 +206,15 @@ def dimensionless_vertex_function_partial_sum(el_1, q1_space, el_2, q2_space, xi
         return [s * scalar for s in sequence]
 
     def make_minkowski_vector(el, q_space):
-        """Return a Minkowski vector."""
+        """Return a Minkowski vector.
+        
+        Parameters:
+            el (int): integer indicating a Matsubara frequency
+            q_space (three-element sequence of floar): spatial momentum
+
+        Returns:
+            four-element sequence of complex: Minkowski 4-vector
+        """
         p_t_eucl = el * mass_scale / a
         p_eucl = rescale(q_space, mass_scale / a)  # spatial components
         p_eucl.insert(0, p_t_eucl)
