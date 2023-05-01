@@ -20,6 +20,7 @@ from dot_product import dot_product
 from mult import mult
 from pysecdec_output_tools import get_uncertainty, get_value, psd_to_sympy
 import spatial_integral as spint
+from sequence_tools import scale
 from wick_rotation import to_euclidean
 
 REL_ERROR = 1e-6
@@ -97,7 +98,7 @@ def correlator_use_trapezoid(p1, p2, masses, k0_eucl_grid):
                   trapezoid(spatial_integral_data, k0_eucl_grid))
 
 
-def dimensionless_correlator_use_psd(q1, q2, xis, mass_scale):
+def dimensionless_correlator_use_psd(q1, q2, xis, mass_scale=1):
     """Compute the dimensionless zero temperature correlator using pySecDec.
 
     Parameters:
@@ -111,20 +112,14 @@ def dimensionless_correlator_use_psd(q1, q2, xis, mass_scale):
     One element of xis should be 1. The other two should be less than or equal
         to 1.
 
+    The results are independent of mass_scale.
+
     Returns:
         sympy object: Dimensionless zero temperature correlator value
         sympy object: Dimensionless zero temperature correlator uncertainty
     """
-    def scale_up(seq, scale):
-        """Multiply each element of the sequence seq by scale."""
-        return [s * scale for s in seq]
-
-    p1 = scale_up(q1, mass_scale)
-    p2 = scale_up(q2, mass_scale)
-    masses = scale_up(xis, mass_scale)
-
+    p1 = scale(q1, mass_scale)
+    p2 = scale(q2, mass_scale)
+    masses = scale(xis, mass_scale)
     correlator_result = correlator_use_psd(p1, p2, masses)
-    value = expand(correlator_result[0] * mass_scale**2)
-    uncertainty = expand(correlator_result[1] * mass_scale**2)
-
-    return value, uncertainty
+    return mult(mass_scale**2, correlator_result)
