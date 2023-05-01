@@ -97,7 +97,7 @@ def correlator_use_trapezoid(p1, p2, masses, k0_eucl_grid):
                   trapezoid(spatial_integral_data, k0_eucl_grid))
 
 
-def dimensionless_correlator_use_psd(q1, q2, xis, M):
+def dimensionless_correlator_use_psd(q1, q2, xis, mass_scale):
     """Compute the dimensionless zero temperature correlator using pySecDec.
 
     Parameters:
@@ -106,7 +106,7 @@ def dimensionless_correlator_use_psd(q1, q2, xis, M):
         q2 (four-element sequence of complex): Second dimensionless Minkowski
             external momentum
         xis (three-element sequence of float): Dimensionless propagator masses
-        M (real): Mass scale, i.e., the largest propagator mass
+        mass_scale (real): Mass scale, i.e., the largest propagator mass
 
     One element of xis should be 1. The other two should be less than or equal
         to 1.
@@ -119,12 +119,12 @@ def dimensionless_correlator_use_psd(q1, q2, xis, M):
         """Multiply each element of the sequence seq by scale."""
         return [s * scale for s in seq]
 
-    p1 = scale_up(q1, M)
-    p2 = scale_up(q2, M)
-    masses = scale_up(xis, M)
+    p1 = scale_up(q1, mass_scale)
+    p2 = scale_up(q2, mass_scale)
+    masses = scale_up(xis, mass_scale)
 
     correlator_result = correlator_use_psd(p1, p2, masses)
-    value = expand(correlator_result[0] * M**2)
-    uncertainty = expand(correlator_result[1] * M**2)
+    value = expand(correlator_result[0] * mass_scale**2)
+    uncertainty = expand(correlator_result[1] * mass_scale**2)
 
     return value, uncertainty
