@@ -270,8 +270,37 @@ def dimless_vertex_sum(q1_eucl, q2_eucl, xis, a, indices, mass_scale=1):
         sympy object two-tuples: a sum of dimensionless vertex function
             uncertainties
     """
-    dimless_vert_seq = dimless_vertex_sequence(q1_eucl, q2_eucl, xis, a, indices, mass_scale=1)
+    dimless_vert_seq =\
+        dimless_vertex_sequence(q1_eucl, q2_eucl, xis,
+                                a, indices, mass_scale=1)
     dimless_vert_sum_val = sum(get_col(dimless_vert_seq, 0))
     dimless_vert_sum_err = sum(get_col(dimless_vert_seq, 1))
     return dimless_vert_sum_val, dimless_vert_sum_err
 
+
+def dimless_vertex_partial_sum_sequence(q1_eucl, q2_eucl, xis, a, max_index, mass_scale=1):
+    """Meh."""
+    dimful_params = dimless_to_dimful(q1_eucl, q2_eucl, xis, a, mass_scale)
+    corr_parsum_vals, corr_parsum_errs, corr_seq_vals, corr_seq_errs =\
+        correlator_partial_sum_sequence(*dimful_params, max_index)
+
+    num_cols = len(corr_parsum_vals)
+    vert_parsum_results =\
+        [correlator_to_vertex([corr_parsum_vals[col], corr_parsum_errs[col]])
+         for col in range(num_cols)]
+    vert_seq_results =\
+        [correlator_to_vertex([corr_seq_vals[col], corr_seq_errs[col]])
+         for col in range(num_cols)]
+
+    dimless_vert_parsum_results =\
+        [mult(mass_scale**2, result) for result in vert_parsum_results]
+    dimless_vert_seq_results =\
+        [mult(mass_scale**2, result) for result in vert_seq_results]
+
+    dimless_vert_parsum_vals = get_col(dimless_vert_parsum_results, 0)
+    dimless_vert_parsum_errs = get_col(dimless_vert_parsum_results, 1)
+    dimless_vert_seq_vals = get_col(dimless_vert_seq_results, 0)
+    dimless_vert_seq_errs = get_col(dimless_vert_seq_results, 1)
+
+    return dimless_vert_parsum_vals, dimless_vert_parsum_errs,\
+        dimless_vert_seq_vals, dimless_vert_seq_errs
