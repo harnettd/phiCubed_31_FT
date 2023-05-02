@@ -16,6 +16,8 @@ from sympy import expand, I, symbols
 
 from pySecDec.integral_interface import IntegralLibrary
 
+from correlator_to_vertex import correlator_to_vertex
+from dimless_to_dimful import dimless_to_dimful
 from dot_product import dot_product
 from mult import mult
 from pysecdec_output_tools import get_uncertainty, get_value, psd_to_sympy
@@ -123,3 +125,32 @@ def dimensionless_correlator_use_psd(q1, q2, xis, mass_scale=1):
     masses = scale(xis, mass_scale)
     correlator_result = correlator_use_psd(p1, p2, masses)
     return mult(mass_scale**2, correlator_result)
+
+
+def dimless_vertex_use_psd(q1_eucl, q2_eucl, xis, a, mass_scale=1):
+    """Compute the dimensionless zero temperature vertex function.
+
+    Parameters:
+        q1_eucl (four-element sequence of complex): First dimensionless
+            Euclidean external momentum
+        q2-eucl (four-element sequence of complex): Second dimensionless
+            Euclidean external momentum
+        xis (three-element sequence of float): Dimensionless propagator masses
+        mass_scale (float): Mass scale, i.e., the largest propagator mass
+
+    One element of xis should be 1. The other two should be less than or equal
+        to 1.
+
+    The results are independent of mass_scale.
+
+    Returns:
+        sympy object: Dimensionless zero temperature vertex function 
+            value
+        sympy object: Dimensionless zero temperature vertex function
+            uncertainty
+    """
+    dimful_params = dimless_to_dimful(q1_eucl, q2_eucl, xis, a, mass_scale)    
+    corr = correlator_use_psd(*dimful_params[:-1])
+    vert = correlator_to_vertex(corr)
+    dimless_vert = mult(mass_scale**2, vert)
+    return dimless_vert
