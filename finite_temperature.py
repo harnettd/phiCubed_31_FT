@@ -16,9 +16,12 @@ Functions:
 """
 import numpy as np
 
+from correlator_to_vertex import correlator_to_vertex
+from dimless_to_dimful import dimless_to_dimful, make_minkowski_vector
 from mult import mult
+from sequence_tools import add_lists, get_col, scale
 import spatial_integral as spint
-from wick_rotation import to_euclidean, to_minkowski
+from wick_rotation import to_euclidean
 
 
 def omega(index, beta):
@@ -82,14 +85,10 @@ def correlator_sequence(p1, p2, masses, beta, indices):
         indices (range of int): Series indices
 
     Returns:
-        list of sympy objects: a list of finite temperature spatial integrals
+        list of 2-tuples of sympy objects: a list of finite temperature spatial
+            integral values and uncertainties
     """
     return [correlator_term(p1, p2, masses, beta, index) for index in indices]
-
-
-def get_col(arr, col):
-    """Return the column col of array arr."""
-    return [row[col] for row in arr]
 
 
 def correlator_sum(p1, p2, masses, beta, indices):
@@ -135,13 +134,6 @@ def partial_sums(seq):
             accumulation.append(accumulation[-1] + seq[-1])
             return accumulation
 
-    def add_lists(seq_1, seq_2):
-        """Add two sequences element-by-element.
-
-        It is assumed that the two lists have equal length.
-        """
-        return [seq_1[index] + seq_2[index] for index in range(len(seq_1))]
-
     mid_index = int((len(seq) - 1) / 2)
     left_index_seq = seq[:mid_index]
     left_index_seq.reverse()
@@ -181,7 +173,8 @@ def correlator_partial_sum_sequence(p1, p2, masses, beta, max_index):
         corr_vals_partial_sums[1], corr_errs_partial_sums[1],
 
 
-def dimensionless_vertex_function_partial_sum(el_1, q1_space, el_2, q2_space, xis, a, indices, mass_scale=1):
+def dimensionless_vertex_function_partial_sum(el_1, q1_space, el_2, q2_space,
+                                              xis, a, indices, mass_scale=1):
     """Compute the dimensionless vertex function (i.e., Gamma).
 
     Parameters:
@@ -200,31 +193,85 @@ def dimensionless_vertex_function_partial_sum(el_1, q1_space, el_2, q2_space, xi
         sympy object: dimensionless vertex function value
         sympy object: dimensionless vertex function uncertainty
     """
-
-    def rescale(sequence, scalar):
-        """Multiply each element of sequence by scalar."""
-        return [s * scalar for s in sequence]
-
-    def make_minkowski_vector(el, q_space):
-        """Return a Minkowski vector.
-        
-        Parameters:
-            el (int): integer indicating a Matsubara frequency
-            q_space (three-element sequence of floar): spatial momentum
-
-        Returns:
-            four-element sequence of complex: Minkowski 4-vector
-        """
-        p_t_eucl = el * mass_scale / a
-        p_eucl = rescale(q_space, mass_scale / a)  # spatial components
-        p_eucl.insert(0, p_t_eucl)
-        return to_minkowski(p_eucl)
-
     p1_mink = make_minkowski_vector(el_1, q1_space)
     p2_mink = make_minkowski_vector(el_2, q2_space)
-    masses = rescale(xis, mass_scale)
+    masses = scale(xis, mass_scale)
     beta = 2 * np.pi * a / mass_scale
 
     corr = correlator_sum(p1_mink, p2_mink, masses, beta, indices)
     corr_to_dimensionless_vert_factor = mass_scale**2 * 1j
     return mult(corr_to_dimensionless_vert_factor, corr)
+
+
+def dimless_vertex_term(q1_eucl, q2_eucl, xis, a, index, mass_scale=1):
+    """Compute a finite temperature dimensionless vertex function term.
+
+    Parameters:
+        q1_eucl (four-element sequence of complex): First external
+            dimensionless Euclidean momentum
+        q2_eucl (four-element sequence of complex): Second external
+            dimensionless Euclidean momentum
+        xis (three-element sequence of float): Dimensionless propagator
+            masses
+        a (float): Dimensionless inverse temperature
+        index (int): Series index
+        mass_scale (float): The largest mass in the problem
+
+    Returns:
+        sympy object: dimensionless vertex term value
+        sympy object: dimensionless vertex term uncertainty
+    """
+    dimful_params = dimless_to_dimful(q1_eucl, q2_eucl, xis, a, mass_scale)
+    corr = correlator_term(*dimful_params, index)
+    vert = correlator_to_vertex(corr)
+    dimless_vert = mult(mass_scale**2, vert)
+    return dimless_vert
+
+
+def dimless_vertex_sequence(q1_eucl, q2_eucl, xis, a, indices, mass_scale=1):
+    """Return a list of finite temperature dimensionless vertex function terms.
+
+    Parameters:
+        q1_eucl (four-element sequence of complex): First external
+            dimensionless Euclidean momentum
+        q2_eucl (four-element sequence of complex): Second external
+            dimensionless Euclidean momentum
+        xis (three-element sequence of float): Dimensionless propagator
+            masses
+        a (float): Dimensionless inverse temperature
+        indices (range of int): Series indices
+        mass_scale (float): The largest mass in the problem
+
+    Returns:
+        list of sympy object two-tuples: a list of dimensionless vertex function
+            value, uncertainty pairs
+    """
+    return [dimless_vertex_term(q1_eucl, q2_eucl, xis, a, index, mass_scale)
+            for index in indices]
+
+
+def dimless_vertex_sum(q1_eucl, q2_eucl, xis, a, indices, mass_scale=1):
+    """Return a sum of finite temperature dimensionless vertex function terms.
+
+    Parameters:
+        q1_eucl (four-element sequence of complex): First external
+            dimensionless Euclidean momentum
+        q2_eucl (four-element sequence of complex): Second external
+            dimensionless Euclidean momentum
+        xis (three-element sequence of float): Dimensionless propagator
+            masses
+        a (float): Dimensionless inverse temperature
+        indices (range of int): Series indices
+        mass_scale (float): The largest mass in the problem
+
+    Returns:
+        sympy object two-tuples: a sum of dimensionless vertex function
+            values
+        sympy object two-tuples: a sum of dimensionless vertex function
+            uncertainties
+    """
+    dimless_vert_seq = dimless_vertex_sequence(q1_eucl, q2_eucl, xis, a, indices, mass_scale=1)
+    dimless_vert_sum_val = sum(get_col(dimless_vert_seq, 0))
+    dimless_vert_sum_err = sum(get_col(dimless_vert_seq, 1))
+    return dimless_vert_sum_val, dimless_vert_sum_err
+
