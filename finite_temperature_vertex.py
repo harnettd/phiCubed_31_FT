@@ -96,7 +96,8 @@ def zeta_function_correction(max_index, a):
     return a**2 / (32 * np.pi**2) * incomplete_zeta_function(3, max_index + 1)
 
 
-def dimless_vertex_sum(q1_eucl, q2_eucl, xis, a, indices, mass_scale=1.):
+def dimless_vertex_sum(q1_eucl, q2_eucl, xis, a, indices,
+                       add_zeta_correction=False, mass_scale=1.):
     """Return a sum of finite temperature dimensionless vertex function terms.
 
     Parameters:
@@ -108,6 +109,8 @@ def dimless_vertex_sum(q1_eucl, q2_eucl, xis, a, indices, mass_scale=1.):
             masses
         a (float): Dimensionless inverse temperature
         indices (range of int): Series indices
+        add_zeta_correction (bool): Flag indicating if zeta function correction
+            should be included in the result
         mass_scale (float): The largest mass in the problem
 
     Returns:
@@ -118,9 +121,17 @@ def dimless_vertex_sum(q1_eucl, q2_eucl, xis, a, indices, mass_scale=1.):
     """
     dimless_vert_seq =\
         dimless_vertex_sequence(q1_eucl, q2_eucl, xis,
-                                a, indices, mass_scale=1)
+                                a, indices, mass_scale)
+
     dimless_vert_sum_val = sum(get_col(dimless_vert_seq, 0))
+    if add_zeta_correction:
+        max_index = max(indices)
+        dimless_vert_sum_val += zeta_function_correction(max_index, a)
+
     dimless_vert_sum_err = sum(get_col(dimless_vert_seq, 1))
+    # I'm not sure how to modify dimless_vert_sum_err if
+    # add_zeta_correction is True. Presumably, it decreases.
+
     return dimless_vert_sum_val, dimless_vert_sum_err
 
 
