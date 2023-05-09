@@ -9,6 +9,10 @@ Functions:
         sequence, sequence, sequence, float, iterator, float) ->
         sequence
 
+    incomplete_zeta_function(int, int) -> float 
+
+    zeta_function_correction(int, float) -> float
+
     dimless_vertex_sum(
         sequence, sequence, sequence, float, iterator, float) ->
         sequence, sequence
@@ -17,6 +21,9 @@ Functions:
         sequence, sequence, sequence, float, int, float) ->
         sequence, sequence, sequence, sequence
 """
+import numpy as np
+from scipy.special import zeta
+
 from correlator_to_vertex import correlator_to_vertex
 from dimless_to_dimful import dimless_to_dimful
 import finite_temperature_correlator as ftc
@@ -69,6 +76,24 @@ def dimless_vertex_sequence(q1_eucl, q2_eucl, xis, a, indices, mass_scale=1.):
     """
     return [dimless_vertex_term(q1_eucl, q2_eucl, xis, a, index, mass_scale)
             for index in indices]
+
+
+def incomplete_zeta_function(n, m):
+    """Return the zeta function at n minus its first m - 1 terms."""
+    return zeta(n) - sum(1 / k**n for k in range(1, m))
+
+
+def zeta_function_correction(max_index, a):
+    """Compute the dimensionless finite temperature vertex function correction.
+
+    Parameters:
+        max_index (int): Maximum series index
+        a (float): Inverse dimensionless temperature
+
+    Return
+        float: Dimensionless finite temperature vertex function correction 
+    """
+    return a**2 / (32 * np.pi**2) * incomplete_zeta_function(3, max_index + 1)
 
 
 def dimless_vertex_sum(q1_eucl, q2_eucl, xis, a, indices, mass_scale=1.):
