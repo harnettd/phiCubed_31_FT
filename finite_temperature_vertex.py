@@ -28,7 +28,7 @@ from correlator_to_vertex import correlator_to_vertex
 from dimless_to_dimful import dimless_to_dimful
 import finite_temperature_correlator as ftc
 from mult import mult
-from sequence_tools import get_col
+from sequence_tools import add_lists, get_col
 
 
 def dimless_vertex_term(q1_eucl, q2_eucl, xis, a, index, mass_scale=1.):
@@ -135,8 +135,9 @@ def dimless_vertex_sum(q1_eucl, q2_eucl, xis, a, indices,
     return dimless_vert_sum_val, dimless_vert_sum_err
 
 
-def dimless_vertex_partial_sum_sequence(q1_eucl, q2_eucl, xis, a, max_index,
-                                        mass_scale=1.):
+def dimless_vertex_partial_sum_sequence(
+        q1_eucl, q2_eucl, xis, a, max_index,
+        add_zeta_correction=False, mass_scale=1.):
     """Return a list of partial sums of finite temperature vertex function terms.
 
     Parameters:
@@ -148,6 +149,8 @@ def dimless_vertex_partial_sum_sequence(q1_eucl, q2_eucl, xis, a, max_index,
             masses
         a (float): Dimensionless inverse temperature
         max_index (int): Maximum series index
+        add_zeta_correction (bool): Flag indicating if zeta function correction
+            should be included in the result
         mass_scale (float): The largest mass in the problem
 
     Returns:
@@ -178,6 +181,12 @@ def dimless_vertex_partial_sum_sequence(q1_eucl, q2_eucl, xis, a, max_index,
         [mult(mass_scale**2, result) for result in vert_seq_results]
 
     dimless_vert_parsum_vals = get_col(dimless_vert_parsum_results, 0)
+    if add_zeta_correction:
+        corrections =\
+            [zeta_function_correction(n, a) for n in range(0, max_index + 1)]
+        dimless_vert_parsum_vals =\
+            add_lists(dimless_vert_parsum_vals, corrections)
+
     dimless_vert_parsum_errs = get_col(dimless_vert_parsum_results, 1)
     dimless_vert_seq_vals = get_col(dimless_vert_seq_results, 0)
     dimless_vert_seq_errs = get_col(dimless_vert_seq_results, 1)
