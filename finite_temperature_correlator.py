@@ -1,4 +1,4 @@
-"""Compute the finite temperature three-point correlator.
+"""Compute the finite-temperature three-point correlator.
 
 Functions:
     omega(int, float) -> float

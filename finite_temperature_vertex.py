@@ -1,4 +1,4 @@
-"""Compute dimensionless finite temperature vertex function.
+"""Compute the dimensionless, finite-temperature, three-point vertex function.
 
 Functions:
     dimless_vertex_term(
