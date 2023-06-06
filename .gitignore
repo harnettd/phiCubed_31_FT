@@ -1,11 +1,10 @@
-.vscode/
 __pycache__/
+.idea/
+.vscode/
 .ipynb_checkpoints/
 
 phiCubed_31/
 phiCubed_31_space/
 scratch/
-siyuan/
-images/
 
 scratch.ipynb
