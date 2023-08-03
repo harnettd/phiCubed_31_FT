@@ -7,9 +7,9 @@ import zero_temperature_vertex as ztv
 
 el_1 = 1
 el_2 = 1
-qx_list = list(np.arange(0, 2.6, 0.1))
-a_list = [0.25, 0.5, 0.75, 1.]
-xis = 1, 1, 1
+qx_list = list(np.arange(0, 10, 0.5))
+a_list = [2.5, 5., 7.5, 10.]
+xis = 1., 0.5, 0
 
 vertex_val_data = []
 vertex_err_data = []

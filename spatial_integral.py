@@ -13,9 +13,9 @@ from pySecDec.integral_interface import IntegralLibrary
 from dot_product import dot_product
 from pysecdec_output_tools import get_value, get_uncertainty, psd_to_sympy
 
-REL_ERROR = 1e-6
-ABS_ERROR = 1e-9
-MAX_ITER = 1000000
+REL_ERROR = 1e-3
+ABS_ERROR = 1e-8
+MAX_ITER = 5_000_000
 
 # load pySecDec libraries for the spatial integrals
 spatial_int_psd =\

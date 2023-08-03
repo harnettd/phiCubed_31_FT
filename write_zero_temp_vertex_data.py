@@ -1,19 +1,16 @@
 """Write the data needed to plot the zero-temperature vertex function."""
 import pickle
 import numpy as np
-import sympy as sp
 
 from finite_real_part import finite_real_part
 import zero_temperature_vertex as ztv
 
-eps = sp.symbols('eps')
-
 q1_space = 0, 0, 0
 q2_space = 0, 0, 0
-xis = 1, 1, 1
+xis = 1, 0.5, 0
 
-el_list = list(np.arange(0, 5))
-a_list = list(np.linspace(0.1, 2.5, 25))
+el_list = list(np.arange(0, 4))
+a_list = list(np.linspace(0.025, 10, 25))
 
 vertex_val_data = []
 vertex_err_data = []

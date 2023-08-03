@@ -14,10 +14,10 @@ def get_finite_real_parts(matrix, col):
 
 el_1 = 1
 el_2 = 1
-qx_list = list(np.arange(0, 2.6, 0.1))
-xis = 1, 1, 1
-a_list = [0.25, 0.5, 0.75, 1]
-n_max = 50
+qx_list = list(np.arange(0, 10, 0.5))
+xis = 1, 0.5, 0
+a_list = [2.5, 5., 7.5, 10.]
+n_max = 75
 n_range = range(-n_max, n_max + 1)
 
 zero_temp_val_matrix = []

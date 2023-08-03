@@ -1,7 +1,6 @@
 """Write the data needed to plot the finite temperature vertex correction."""
 import pickle
 import numpy as np
-import sympy as sp
 
 import finite_temperature_vertex as ftv
 from finite_real_part import finite_real_part
@@ -16,12 +15,11 @@ def append_to(result_matrix, col_num):
     result_matrix.append(finite_real_parts)
 
 
-eps = sp.symbols('eps')
-el_list = list(np.arange(0, 5))
+el_list = list(np.arange(0, 4))
 q1_space = 0, 0, 0
 q2_space = 0, 0, 0
-xis = 1, 1, 1
-a_list = list(np.linspace(0.1, 2.5, 40))
+xis = 1, 0.5, 0
+a_list = list(np.linspace(0.025, 10, 25))
 n_max = 75
 n_range = range(-n_max, n_max + 1)
 

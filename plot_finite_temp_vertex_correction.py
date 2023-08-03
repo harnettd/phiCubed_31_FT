@@ -20,11 +20,9 @@ correction_err_arr = finite_temp_err_arr + zero_temp_err_arr
 params = {
     0: [-1, 'blue', 'upper right', None, r'$\tilde{\Gamma}_T - \tilde{\Gamma}_0$'],
     1: [-1, 'orange', 'upper right', None, None],
-    2: [-1, 'green', 'lower left', r'$a$', r'$\tilde{\Gamma}_T - \tilde{\Gamma}_0$'],
-    3: [-1, 'red', 'lower left', r'$a$', None],
+    2: [-1, 'green', 'lower right', r'$a$', r'$\tilde{\Gamma}_T - \tilde{\Gamma}_0$'],
+    3: [-1, 'red', 'lower right', r'$a$', None],
 }
-
-# max_a_indices = [22, 11, 10, 8, 6]
 
 fig, ax = plt.subplots(nrows=2, ncols=2, sharex=True, sharey=False,
                        figsize=(6, 3.7), layout='constrained')
@@ -46,5 +44,4 @@ add_plot(0, 1, 1)
 add_plot(1, 0, 2)
 add_plot(1, 1, 3)
 
-# ax.set_ylabel(r'$\tilde{\Gamma}_T - \tilde{\Gamma}_0$')
 plt.show()

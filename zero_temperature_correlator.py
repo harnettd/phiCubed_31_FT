@@ -19,9 +19,9 @@ from pysecdec_output_tools import get_uncertainty, get_value, psd_to_sympy
 import spatial_integral as spint
 from wick_rotation import to_euclidean
 
-REL_ERROR = 1e-6
-ABS_ERROR = 1e-9
-MAX_ITER = 1_000_000
+REL_ERROR = 1e-3
+ABS_ERROR = 1e-8
+MAX_ITER = 5_000_000
 
 # load pySecDec libraries for the zero temperature spacetime integrals
 spacetime_int_psd = IntegralLibrary('phiCubed_31/phiCubed_31_pylink.so')

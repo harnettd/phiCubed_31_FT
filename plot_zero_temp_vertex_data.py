@@ -16,7 +16,7 @@ vertex_err_arr = np.array(data['vertex_err_data'])
 colors = ['blue', 'orange', 'green', 'red']
 
 fig, ax = plt.subplots(layout='constrained', figsize=(6, 3.71))
-for p in range(len(el_arr) - 1):
+for p in range(len(el_arr)):
     ax.errorbar(x=a_arr, y=vertex_val_arr[p],
                 yerr=vertex_err_arr[p],
                 fmt='.-', color=colors[p],
