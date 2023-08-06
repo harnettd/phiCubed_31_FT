@@ -13,14 +13,13 @@ a_arr = np.array(data['a_list'])
 vertex_val_arr = np.array(data['vertex_val_data'])
 vertex_err_arr = np.array(data['vertex_err_data'])
 
-colors = ['blue', 'orange', 'green', 'red']
+formats = ['.-k', '.--k', '.-.k', '.:k']
 
 fig, ax = plt.subplots(layout='constrained', figsize=(6, 3.71))
 for p in range(len(el_arr)):
     ax.errorbar(x=a_arr, y=vertex_val_arr[p],
                 yerr=vertex_err_arr[p],
-                fmt='.-', color=colors[p],
-                label=r'$\ell=$ {}'.format(el_arr[p]))
+                fmt=formats[p], label=r'$\ell$ = {:}'.format(el_arr[p]))
     ax.set_xlabel(r'$a$')
     ax.set_ylabel(r'$\tilde{\Gamma}_{0}$')
     ax.legend(loc='lower right')

@@ -18,10 +18,10 @@ correction_val_arr = finite_temp_val_arr - zero_temp_val_arr
 correction_err_arr = finite_temp_err_arr + zero_temp_err_arr
 
 params = {
-    0: [-1, 'blue', 'upper right', None, r'$\tilde{\Gamma}_T - \tilde{\Gamma}_0$'],
-    1: [-1, 'orange', 'upper right', None, None],
-    2: [-1, 'green', 'lower right', r'$a$', r'$\tilde{\Gamma}_T - \tilde{\Gamma}_0$'],
-    3: [-1, 'red', 'lower right', r'$a$', None],
+    0: [-1, '.-k', 'upper right', None, r'$\tilde{\Gamma}_T - \tilde{\Gamma}_0$'],
+    1: [-1, '.--k', 'upper right', None, None],
+    2: [-1, '.-.k', 'lower right', r'$a$', r'$\tilde{\Gamma}_T - \tilde{\Gamma}_0$'],
+    3: [-1, '.:k', 'lower right', r'$a$', None],
 }
 
 fig, ax = plt.subplots(nrows=2, ncols=2, sharex=True, sharey=False,
@@ -32,12 +32,15 @@ def add_plot(row, col, el_index):
     ax[row, col].errorbar(x=a_arr[:params[el_index][0]],
                           y=correction_val_arr[el_index, :params[el_index][0]],
                           yerr=correction_err_arr[el_index, :params[el_index][0]],
-                          color=params[el_index][1],
-                          fmt='.-', label=r'$\ell =$ {}'.format(el_index))
-    ax[row, col].legend(loc=params[el_index][2])
+                          fmt=params[el_index][1],
+                          label=r'$\ell =$ {}'.format(el_index))
+    ax[row, col].set_title(r'$\ell =$ {}'.format(el_index))
+    # ax[row, col].legend(loc=params[el_index][2])
     ax[row, col].set_xlabel(params[el_index][3])
+    ax[row, col].set_xticks(np.arange(0, 12.5, 2.5))
     ax[row, col].set_ylabel(params[el_index][4])
-
+    if row == 0 and col == 0:
+        ax[row, col].set_yscale('log')
 
 add_plot(0, 0, 0)
 add_plot(0, 1, 1)

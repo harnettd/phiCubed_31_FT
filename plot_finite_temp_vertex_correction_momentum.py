@@ -18,16 +18,16 @@ correction_val_arr = finite_temp_val_arr - zero_temp_val_arr
 correction_err_arr = finite_temp_err_arr + zero_temp_err_arr
 
 plot_options = [
-    {'color': 'blue', 'x_label': None,
+    {'format': '.-k', 'x_label': None,
      'y_label': r'$\tilde{\Gamma}_T - \tilde{\Gamma}_0$',
      'legend_loc': 'upper right'},
-    {'color': 'orange', 'x_label': None,
+    {'format': '.--k', 'x_label': None,
      'y_label': None,
      'legend_loc': 'upper right'},
-    {'color': 'green', 'x_label': r'$q^x$',
+    {'format': '.-.k', 'x_label': r'$q^1$',
      'y_label': r'$\tilde{\Gamma}_T - \tilde{\Gamma}_0$',
      'legend_loc': 'upper right'},
-    {'color': 'red', 'x_label': r'$q^x$',
+    {'format': '.:k', 'x_label': r'$q^1$',
      'y_label': None,
      'legend_loc': 'upper right'}
 ]
@@ -40,11 +40,12 @@ fig, ax =\
 def add_plot(row, col, index):
     ax[row, col].errorbar(x=qx_arr, y=correction_val_arr[index],
                           yerr=correction_err_arr[index],
-                          fmt='.-', color=plot_options[index]['color'],
+                          fmt=plot_options[index]['format'],
                           label=r'$a=$' + '{:4.2f}'.format(a_arr[index]))
+    ax[row, col].set_title(r'$a$ = {:4.1f}'.format(a_arr[index]))
     ax[row, col].set_xlabel(plot_options[index]['x_label'])
     ax[row, col].set_ylabel(plot_options[index]['y_label'])
-    ax[row, col].legend(loc=plot_options[index]['legend_loc'])
+    # ax[row, col].legend(loc=plot_options[index]['legend_loc'])
 
 add_plot(0, 0, 0)
 add_plot(0, 1, 1)
