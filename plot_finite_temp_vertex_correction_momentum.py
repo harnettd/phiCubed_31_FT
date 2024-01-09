@@ -47,6 +47,7 @@ def add_plot(row, col, index):
     ax[row, col].set_ylabel(plot_options[index]['y_label'])
     # ax[row, col].legend(loc=plot_options[index]['legend_loc'])
 
+
 add_plot(0, 0, 0)
 add_plot(0, 1, 1)
 add_plot(1, 0, 2)
